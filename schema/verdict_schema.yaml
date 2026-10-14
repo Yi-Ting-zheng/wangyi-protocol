@@ -1,0 +1,94 @@
+# Wangyi Protocol — Verdict Schema (machine-readable)
+# 真值层级：DEFINITION（schema 为约定；其校验效果为 EMPIRICAL）
+# 上级契约：spec/wangyi_spec.md §7
+# 版本：v1.0-draft | 2026-10-15
+# 参考实现同构源：SiliconLifeOS EMF Profile（math_attack_rules.yaml MA-007）
+
+meta:
+  schema_version: "1.0-draft"
+  protocol: "Wangyi Protocol"
+  normative_source: "spec/wangyi_spec.md#7-verdicts"
+  maturity_note: >
+    Draft schema. Single reference implementation; portability to a second
+    independent codebase is unverified.
+
+verdict_enum:
+  canonical:                  # 规范名（中文形，与参考实现一致）
+    - "MATHLIB_VERIFIED_COMPLETE"
+    - "INCONCLUSIVE"
+    - "BLOCK_条件A"
+    - "BLOCK_条件B"
+    - "BLOCK双重失败"
+  english_alias:
+    MATHLIB_VERIFIED_COMPLETE: "MATHLIB_VERIFIED_COMPLETE"
+    INCONCLUSIVE: "INCONCLUSIVE_UNVERIFIABLE"
+    "BLOCK_条件A": "BLOCK_CONDITION_A"
+    "BLOCK_条件B": "BLOCK_CONDITION_B"
+    "BLOCK双重失败": "BLOCK_DUAL_FAILURE"
+
+conditions:
+  A_import_coverage:
+    name: "import-tree Mathlib coverage"
+    checks:
+      - id: transitive_closure
+        type: "bool"
+        desc: "主定理 import 传递闭包遍历完成"
+      - id: mathlib_reachable
+        type: "bool"
+        desc: "闭包内传递可达 Mathlib.*"
+      - id: core_object_redefinition
+        type: "enum"
+        values: ["NONE", "LOW", "HIGH"]
+        desc: "核心对象重定义；HIGH 阻断；LOW（派生别名）放行"
+      - id: closure_bloat_suspect
+        type: "bool"
+        desc: "闭包 > 200 内部模块 → 警示登记（不单独阻断）"
+    pass_rule: "mathlib_reachable && core_object_redefinition != 'HIGH'"
+  B_sorryax_scan:
+    name: "#print axioms full-chain sorryAx scan"
+    checks:
+      - id: status
+        type: "enum"
+        values: ["PASS", "FAIL_SORRYAX", "UNVERIFIABLE"]
+        desc: "UNVERIFIABLE 覆盖：报错/无工具链/外部语料不可编译（error≠PASS，R07）"
+      - id: axiom_set
+        type: "list[string]"
+        desc: "全链路公理集（须 ⊆ 白名单且不含 sorryAx）"
+      - id: decl_fq_name
+        type: "string"
+        desc: "被检声明全限定名（含命名空间；短名是已知假 PASS 生成器）"
+    pass_rule: "status == 'PASS'"
+
+verdict_logic:
+  - when: {A: PASS, B: PASS}
+    verdict: "MATHLIB_VERIFIED_COMPLETE"
+  - when: {A: PASS, B: UNVERIFIABLE}
+    verdict: "INCONCLUSIVE"
+  - when: {A: FAIL}
+    verdict: "BLOCK_条件A"
+  - when: {B: FAIL_SORRYAX}
+    verdict: "BLOCK_条件B"
+  - when: {A: FAIL, B: UNVERIFIABLE}
+    verdict: "BLOCK双重失败"
+
+record_fields:               # 每条裁决记录必备字段
+  - protocol_version         # 如 "1.0-draft"
+  - entry                    # 入口模块（全限定）
+  - internal_module_count    # 闭包内部模块数
+  - mathlib_import_count     # 闭包内 Mathlib 导入数
+  - third_party_imports      # 三方依赖清单
+  - core_redefinitions       # 重定义清单（object/module/kind/risk/note）
+  - condA_import_coverage    # PASS | FAIL
+  - condB_sorryax            # PASS | FAIL_SORRYAX | UNVERIFIABLE
+  - closure_bloat_suspect    # bool
+  - verdict                  # verdict_enum.canonical 之一
+  - snapshot_sha256          # 快照哈希（R04）
+  - toolchain_pin            # 工具链版本钉（R11）
+  - auditor_defect_history   # 审计器已知盲点/既往假 PASS 修复记录（R12）
+
+whitelist_reference:
+  lean_core: [propext, "Classical.choice", "Quot.sound"]
+  forbidden: ["sorryAx"]
+  note: "项目级白名单见各项目 Profile；此处为协议基线"
+
+archival_states: [SUPERSEDED, DEPRECATED, HISTORICAL]
