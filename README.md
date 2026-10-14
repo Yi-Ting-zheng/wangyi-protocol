@@ -147,6 +147,24 @@ Recommended usage loop:
 For a worked example of what the agent should produce, see the flagship case
 in [examples/oai_409_entry_audit/](examples/oai_409_entry_audit/).
 
+## Citation / DOI
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23376296.svg)](https://doi.org/10.5281/zenodo.23376296)
+
+Archived release: <https://doi.org/10.5281/zenodo.23376296>
+
+```bibtex
+@software{wangyi_protocol_v1,
+  title   = {Wangyi Protocol: L3 Audit & Truth-Grading Protocol for
+             Multi-Agent Formal Artifacts},
+  author  = {Yi-Ting-zheng},
+  year    = {2026},
+  version = {v1.0-draft},
+  doi     = {10.5281/zenodo.23376296},
+  url     = {https://github.com/Yi-Ting-zheng/wangyi-protocol}
+}
+```
+
 ## License
 
 Protocol text (spec, examples, schema, documentation) © 2026 Yi-Ting-zheng,
@@ -269,6 +287,12 @@ Ostmann 4,358 / MutuallyUnbiased 3,381。
    依 C-02（同基座多 Agent 复核不构成独立验证），同语料重审永不升格真值层级。
 4. **本文档自身真值层级**：规范正文是 `DEFINITION` 级约定，已发布审计结果为
    `EMPIRICAL` 级。引用应写"符合望易协议 v1.0-draft"，不得写"经望易协议证明"。
+
+## 引用 / DOI
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23376296.svg)](https://doi.org/10.5281/zenodo.23376296)
+
+存档发布：<https://doi.org/10.5281/zenodo.23376296>（BibTeX 见英文区 Citation 节）
 
 ## 使用方法（本仓不产脚本）
 

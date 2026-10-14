@@ -7,6 +7,8 @@ developed in the SiliconLifeOS research tree.
 
 ### Added
 
+- Zenodo DOI registered: **10.5281/zenodo.23376296** (README citation
+  section, EN + CN)
 - `LICENSE` — CC BY-NC-ND 4.0 (copyright 2026 Yi-Ting-zheng) +
   protocol-specific scope clarification (license governs protocol text;
   independent implementations are separate works)
