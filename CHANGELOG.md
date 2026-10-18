@@ -247,4 +247,74 @@ second independent implementation conforms. Specification text is
 
 ---
 
-`Wangyi Protocol | changelog | v2.0-draft | schema v1.2-draft | 2026-10-18`
+## schema v1.3-draft — 2026-10-18 (TP-MA008-2 batch 2, additive)
+
+### Changed (provenance schema v1.2-draft → **v1.3-draft**)
+
+- **`audit_verdict_enum` first draft** (TP-MA008-2 #4): the per-stage
+  `audit_verdict` field previously had no value discipline at all. v1.3
+  introduces a *draft disclosure set* (`PASS_L1..L3` / `BLOCK_L1..L3` /
+  `INCONCLUSIVE` + verbatim-quoted gate-branch composite tokens such as
+  MA-007's `BLOCK_条件A`). Honest status: **not closed** — deliberately,
+  so no never-observed value gets paper-frozen; P3 does not enforce, unknown
+  values are disclosed on the warn channel; set closure requires one round
+  of real-manifest observation plus a four-axis control group.
+- **`provenance_verdict_record_fields`** (TP-MA008-2 #5): the provenance
+  axis previously had no record shape for a *published adjudication*
+  (the verdict axis always had `record_fields`). v1.3 adds the optional
+  record shape (`adjudicated_at` / `gate` / `schema_version` /
+  `manifest_sha256` / `verdict` / per-check results with findings /
+  `auditor`). Publishing one is RECOMMENDED, not required; a
+  non-conforming record is discarded, not BLOCKed, until its own four-axis
+  group exists.
+- **`gap_ledger_entry_fields`** (TP-MA008-2 #7): P8 matched
+  `GAP-SKELETON` records against "the GAP ledger" that had no defined
+  entry shape. v1.3 fixes the reconciliation-anchor shape (`gap_id` /
+  `artifact_ref` / `statement_ref` / `status: GAP-OPEN|GAP-ESCALATE|
+  GAP-CLOSED` / `registered_at` / `closure_condition` / `owner` /
+  `last_review_at`); P8's strict matching key becomes concrete:
+  `gap_id ↔ artifact_id` of the skeleton record.
+- **manifest meta gains `schema_version`** (TP-MA008-2 #3): the manifest
+  lineage version (`manifest_version`) and the protocol provenance-schema
+  version (`schema_version`) are disjoint semantics; P9(a) dispatch now
+  reads `schema_version` first and falls back to `manifest_version` for
+  legacy v1.0/v1.1 manifests.
+- **Non-normative:** P2's machine-operator draft (TP-MA008-2 #9) is
+  documented in `spec/ma_008.md` §8.2 as a lead generator for the human
+  auditor — no enforcement added.
+
+### Changed (spec text)
+
+- `spec/ma_008.md` §8.1: **single-vs-multi asymmetry** written out as a
+  normative boundary paragraph (single missing record →
+  `BLOCK_溯源清单缺失` because the defect set is exhaustively known;
+  multi-declaration manifest absent → `INCONCLUSIVE` because P1's
+  comparison has an undefined side).
+- `spec/ma_008.md` §5.5 (new): **escape-class inventory, first draft**
+  (TP-MA008-2 #6) — four detector classes for source-lying in the
+  anti-inflation field itself (draft-hash replay; same-family
+  fingerprint reconciliation; log/build/session timeline
+  reconciliation; environment–billing reconciliation) each with its
+  residual blind spot, plus the registered remainder: a determining
+  `HUMAN_FULL` fraud exercised outside all four classes is outside any
+  reachable technical boundary.
+- `spec/ma_008.md` §7: **log–record threshold measurement protocol**
+  registered a-priori (item 1 stays OPEN — the corpus has no manifest
+  with a non-empty `modification_log`, so no drift rate is estimable;
+  the decision rule must be written before observation).
+- `spec/wangyi_spec.md` §9: schema lineage sentence appended (v1.3-draft,
+  additive-only track); `schema/verdict_schema.yaml` versioning note
+  updated to the same-day v1.3 extension.
+
+### Maturity statement
+
+Schema v1.3-draft is additive on top of v1.2 manifests; no
+P1–P9 rule and no verdict-set value changed (the roadmap non-goal is
+respected). Remaining TP-MA008-2 open items: #1 (threshold measurement —
+needs ≥2 real manifests with non-empty edit logs) and #2 (stale-manifest
+P1 window — needs one observed real change flow); both keep their
+roadmap rows with concrete measurement plans.
+
+---
+
+`Wangyi Protocol | changelog | v2.0-draft | schema v1.3-draft | 2026-10-18`

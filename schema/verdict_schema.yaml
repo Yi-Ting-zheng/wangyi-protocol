@@ -11,8 +11,9 @@ meta:
   schema_versioning_note: >
     Schema versions are independent of the protocol version line: protocol
     v2.0-draft (2026-10-18) ships verdict schema v1.0-draft (unchanged
-    since first release) together with provenance schema v1.2-draft. Do
-    not read "1.0" as staleness.
+    since first release) together with provenance schema (v1.2-draft at
+    release; extended to v1.3-draft the same day via TP-MA008-2 batch 2,
+    additive only). Do not read "1.0" as staleness.
   maturity_note: >
     Draft schema. Single reference implementation; portability to a second
     independent codebase is unverified.

@@ -211,11 +211,16 @@ wangyi-protocol/
 │   ├── wangyi_spec.md           # normative specification (English)
 │   ├── ma_000.md                # MA-000 delivery gate
 │   ├── ma_007.md                # MA-007 dual-condition Mathlib gate
+│   ├── ma_008.md                # MA-008 per-declaration provenance gate
 │   └── terms.md                 # bilingual glossary
+├── roadmap/
+│   └── ROADMAP-MA-008.md        # open follow-up topics (TP-MA008-1/-2)
 ├── examples/
-│   └── oai_409_entry_audit/     # flagship case: snapshot + hash + notes
+│   ├── oai_409_entry_audit/     # flagship case: snapshot + hash + notes
+│   └── ma008_hash_vectors/      # hash-normalization conformance vectors
 └── schema/
-    └── verdict_schema.yaml      # machine-readable verdict schema
+    ├── verdict_schema.yaml      # machine-readable verdict schema
+    └── provenance_schema.yaml   # machine-readable provenance schema (v1.3-draft)
 ```
 
 ---

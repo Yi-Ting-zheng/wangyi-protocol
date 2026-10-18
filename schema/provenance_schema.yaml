@@ -1,12 +1,12 @@
 # Wangyi Protocol — Provenance Schema (machine-readable)
 # 真值层级：DEFINITION（schema 为约定；其校验效果为 EMPIRICAL）
 # 上位契约：spec/wangyi_spec.md#4.3 与 spec/ma_008.md
-# 版本：v1.2-draft | 2026-10-18
+# 版本：v1.3-draft | 2026-10-18
 # 关联：verdict_schema.yaml（裁决 schema）；本 schema 管"制品怎么来的"，
 #       verdict_schema 管"制品对不对"，二者互补不互替。
 
 meta:
-  schema_version: "1.2-draft"
+  schema_version: "1.3-draft"
   protocol: "Wangyi Protocol"
   gate: "MA-008"
   normative_source: "spec/ma_008.md"
@@ -39,6 +39,23 @@ meta:
     spec/ma_008.md §4.2 (statement: whitespace-collapsed + stripped; proof:
     byte-exact raw span; CONJECTURE: hash of empty string) with conformance
     vectors in examples/ma008_hash_vectors/.
+  v1_3_changes: >
+    TP-MA008-2 batch-2 items, all additive; no P1–P9 rule or verdict-set
+    value is changed (roadmap non-goal). (1) audit_verdict_enum first
+    draft — publish-time disclosure set for the per-stage audit_verdict
+    field; P3 still does NOT enforce it (unknown values disclosed on the
+    warn channel) until real manifests are observed; (2)
+    provenance_verdict_record_fields — optional published record shape for
+    an MA-008 adjudication (was previously missing while verdict_schema
+    always had one); (3) gap_ledger_entry_fields — the closed target shape
+    a GAP ledger entry should parse to, giving P8 a concrete reconciliation
+    anchor (ledger files may remain markdown; the shape defines the
+    matching); (4) manifest meta gains schema_version — version semantics
+    of the manifest lineage (manifest_version) and of this protocol schema
+    (schema_version) are disjoint; P9(a) dispatch reads schema_version
+    when present and falls back to manifest_version for legacy v1.0/v1.1
+    manifests. P2's machine operator draft is documented non-normatively
+    in spec/ma_008.md (TP-MA008-2 #9), not added here.
 
 # ── 封闭枚举（协议固化，禁止自造值） ──────────────────────────────────────
 artifact_type_enum:
@@ -64,6 +81,60 @@ execution_environment_enum:
   - internal_cluster   # 自有集群执行（权重本地部署；无外部计费对手方）
   - external_api       # 外部 API 调用（服务端可截断上下文/限采样/计量，签名应指端点而非权重）
   - local_runtime      # 本地单机推理（个人设备，无集群与外部 API）
+
+# ── per-stage audit_verdict 初稿披露集（v1.3，TP-MA008-2 #4） ────────────
+# 状态：warn 级初稿（P3 不校验；未知值 warn 披露）。冻结前置：真实清单
+# 观察一轮（≥2 个非空 audit_verdict 清单）+ 四维对照，之后经 §5 更新程序
+# 冻结为封闭集。当前刻意不闭：避免把从未出现过的值"纸面冻结"。
+audit_verdict_enum:
+  all_of:
+    - one_of_these:            # 过 WP-Ln 审计的裁决态
+        - "PASS_L1"            # 语法层通过
+        - "PASS_L2"            # 语义层通过
+        - "PASS_L3"            # 元验证层通过
+        - "BLOCK_L1"
+        - "BLOCK_L2"
+        - "BLOCK_L3"
+        - "INCONCLUSIVE"       # 与 verdict_enum 同名同义
+    - or_gate_composite_token: # gate 专属复合裁决 token，可照抄回填
+        note: >
+          如 MA-007 侧的 BLOCK_条件A / BLOCK_条件B。允许直接记录该支线
+          裁决表中的封闭值；warn 通道对前后缀均不识别的 token 逐条披露。
+  freeze_note: "非当前状态：本段是『过 L 级 + 可引用 gate 支线 token』的形态
+    草案，四维对照与真实清单观察未跑前不作封闭集宣称。"
+
+# ── MA-008 裁决记录的发布形态（v1.3，TP-MA008-2 #5） ─────────────────────
+# 溯源侧此前只有清单本体，没有"裁决结论"的记录 schema（verdict_schema
+# 一直有 record_fields，来源轴缺失）。发布裁决记录为 RECOMMENDED 非必选；
+# 不合形状的裁决记录 = 丢弃该记录（不 BLOCK），直至其自身四维对照全过。
+provenance_verdict_record_fields:
+  - adjudicated_at        # ISO 8601，带时区偏移
+  - gate                  # 固定 "MA-008"
+  - schema_version        # 诊断当时所依 provenance schema 版本，如 "1.3-draft"
+  - manifest_sha256       # 64 hex；Scheme A 内联清单无清单体时填空串
+  - verdict               # values_from: verdict_enum.canonical（封闭）
+  - checks:               # P1–P9 逐项结论
+      item_fields:
+        - id              # "P1" … "P9"
+        - result          # enum: PASS | FAIL | SUSPENDED | DISCLOSE
+        - detail          # 文字说明；DISCLOSE 须给出计数与样例
+        - findings:       # 逐条明细（文件/行/规则/消息）
+            item_fields: [file, line, rule, message]
+  - auditor               # 裁决执行人（人或 Agent 名）
+
+# ── GAP 台账条目的对账锚形状（v1.3，TP-MA008-2 #7） ──────────────────────
+# 台账文件本体可以是任意登记形态（markdown 等）；本节固定的是「对账时
+# 条目必须能解析出的字段」。P8（strict）的对账键 = gap_id ↔ GAP-SKELETON
+# 记录的 artifact_id；statement_ref 为次级锚（非哈希锚形时）。
+gap_ledger_entry_fields:
+  - gap_id                # 台账内唯一；只增不改不复用
+  - artifact_ref          # string：GAP-SKELETON 记录的 artifact_id，或 "<file>:<line>" 源锚
+  - statement_ref         # string：可哈希的声明填 statement_hash_sha256，否则逐字锚文本
+  - status                # enum: GAP-OPEN | GAP-ESCALATE | GAP-CLOSED（扩集走 §5 更新程序）
+  - registered_at         # ISO 8601，带时区偏移
+  - closure_condition     # 关闭条件，执行前写（空串 = 不合规条目，对账时披露）
+  - owner                 # 责任人 / 复查期限合并登记（自由文本）
+  - last_review_at        # ISO 8601；可选
 
 # ── 字段定义 ──────────────────────────────────────────────────────────────
 fields:
@@ -97,7 +168,6 @@ fields:
       contribution_type: {type: "enum", values_from: "contribution_type_enum"}
       timestamp:    {type: "string", note: "ISO 8601，带时区偏移"}
       auditor:      {type: "string", note: "L3 审计执行人（人或 Agent 名）"}
-      audit_verdict: {type: "string", note: "该阶段当时的 WP 裁决，如 PASS_L2 / BLOCK_条件A"}
       execution_environment:
         type: "enum"
         values_from: "execution_environment_enum"
@@ -117,6 +187,14 @@ fields:
           复核），一律不入本清单——只存放算力链计费账本（append-only，
           计费单为第三方锚点）对应切片的 SHA-256。指针/作用域/冲突声明
           三件套登记，见 spec/ma_008.md §9.1。
+      audit_verdict:
+        type: "string"
+        values_from: "audit_verdict_enum"
+        required: true
+        note: >
+          该阶段当时的 WP 裁决（如 PASS_L2）。v1.3 给出初稿披露集
+          （见 audit_verdict_enum 注）：P3 暂不校验，不合值经 warn 通道
+          披露；封闭冻结前 TP-MA008-2 #4 保持 OPEN。
   modification_log:
     type: "array"
     required: false
@@ -233,6 +311,10 @@ verdict_logic:
 # ── 清单（方案 B）元数据 ──────────────────────────────────────────────────
 manifest_meta_fields:
   - manifest_version
+  - schema_version    # v1.3：本协议溯源 schema 的版本（如 "1.3-draft"）；与
+                      # manifest_version（清单世系）语义相离不得混用。P9(a)
+                      # 分流先读本字段；缺失时回退 manifest_version（v1.0/v1.1
+                      # 世代清单的兼容通道，降级路径在 spec/ma_008.md 登记）
   - protocol
   - gate
   - project

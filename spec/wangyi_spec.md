@@ -286,6 +286,10 @@ archived at the registered DOI) → `v1.x` intra-draft amendments →
 `v2.0-draft` (2026-10-18): the first major version carrying MA-008 as a
 full gate — normative provenance schema (v1.2), the pinned hash-normalization
 annex with conformance vectors, and the execution-environment axis.
+Intra-draft schema evolution continues on the additive-only track:
+`v1.3-draft` (same day, TP-MA008-2 batch 2 — `audit_verdict_enum` draft,
+`provenance_verdict_record_fields`, `gap_ledger_entry_fields`,
+manifest `schema_version`) changes no P1–P9 rule and no verdict-set value.
 
 Rule: amendments append new versions; this text is never rewritten in
 place. Changes are logged in the repository CHANGELOG with hash-chained
