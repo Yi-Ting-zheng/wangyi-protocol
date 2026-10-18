@@ -22,6 +22,12 @@
 | **Append-only archive** | 只增归档 | Superseded material is stamped (`SUPERSEDED`/`DEPRECATED`/`HISTORICAL`) + hash-locked, never deleted. 被取代材料盖戳 + 哈希锁定，永不删除。 |
 | **Hash lock** | 哈希锁 | SHA-256 checksum shipped with every published verdict snapshot. 每份发布裁决快照随附 SHA-256 校验和。 |
 | **C-02** | 同基座复核非独立验证 | Same-base multi-agent review is internal re-orchestration, not independent verification; independence is carried by rule/observation-dimension difference. 同基座多 Agent 复核不构成独立验证；独立性由规则/观测维度差异承载。 |
-| **MA gate** | MA 审计门 | BLOCKING machine-checkable rule (MA-000 delivery, MA-007 Mathlib dual-condition, …). 可机器校验的阻断规则。 |
+| **MA gate** | MA 审计门 | BLOCKING machine-checkable rule (MA-000 delivery, MA-007 Mathlib dual-condition, MA-008 provenance, …). 可机器校验的阻断规则。 |
+| **Provenance ledger** | 溯源台账 | Append-only, per-declaration production record: model family/version/signature + contribution_type + audit verdict. 只增的逐声明生产记录：模型家族/版本/签名 + 贡献类型 + 审计裁决。 |
+| **Contribution type** | 贡献类型 | `AI_DRAFT` / `AI_LEMMA_SUGGEST` / `HUMAN_FULL` / `AI_MINOR_TWEAK` / `AI_COMPLETE`. 强制区分 AI 初稿/人工重构/纯手写，禁止"AI 辅助"模糊表述。 |
+| **Model signature** | 模型签名 | Open-weight: weight-checkpoint SHA-256; closed-source: official release identifier + release digest. Permanently pins which model produced a draft. 开源填权重 sha256，闭源填官方发布标识+发布摘要；永久锁定初稿出自哪个模型。 |
+| **Execution environment** | 执行环境 | Closed enum `internal_cluster` / `external_api` / `local_runtime`; records the conditions of generation per stage (serving regime: truncation, sampling caps, metering). No credibility weight; mixed environment must be split into separate stages. 闭集枚举，逐 stage 记录生成条件（服务侧截断/采样上限/计量口径）；不携带可信度权重；混环境必须拆条。 |
+| **Cost ledger reference** | 成本账本指针 | SHA-256 pointer into the compute-chain billing ledger. Token/cache/quota figures are self-attested and live ONLY in that ledger, never in the provenance manifest. 指向算力链计费账本切片的哈希指针。token/缓存/配额是自报量，只入计费账本，不入溯源清单。 |
+| **Knowledge-provenance chain** | 知识制品溯源链 | Cryptographic evidence applied to the genealogy of formal artifacts; distinct from a compute work-proofs chain, it competes for no compute reward. 密码学存证在形式化制品谱系的落地；区别于算力工作量证明链，不争夺算力奖励。 |
 | **Reference implementation profile** | 参考实现 Profile | The concrete toolchain + rule file implementing this spec for one project (e.g. EMF Profile). 某项目落地本规范的具体工具链 + 规则文件。 |
-| **v1.0-draft** | 草案规范 | Maturity tag: single implementation, portability unverified; not a "standard". 成熟度标签：单实现、可移植性未验证，不称"标准"。 |
+| **v2.0-draft** | 草案规范 | Maturity tag: single implementation, portability partially supported (hash conformance vectors), not a "standard". 成熟度标签：单实现、可移植性有向量支撑但未验证，不称"标准"。 |

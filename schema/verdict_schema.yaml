@@ -8,6 +8,11 @@ meta:
   schema_version: "1.0-draft"
   protocol: "Wangyi Protocol"
   normative_source: "spec/wangyi_spec.md#7-verdicts"
+  schema_versioning_note: >
+    Schema versions are independent of the protocol version line: protocol
+    v2.0-draft (2026-10-18) ships verdict schema v1.0-draft (unchanged
+    since first release) together with provenance schema v1.2-draft. Do
+    not read "1.0" as staleness.
   maturity_note: >
     Draft schema. Single reference implementation; portability to a second
     independent codebase is unverified.

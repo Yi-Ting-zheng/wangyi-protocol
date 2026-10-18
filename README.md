@@ -1,6 +1,6 @@
 # Wangyi Protocol — L3 Audit & Truth-Grading Protocol for Multi-Agent Formal Artifacts
 
-> **Maturity: v1.0-draft (Draft Specification + Reference Implementation)**
+> **Maturity: v2.0-draft (Draft Specification + Reference Implementation)**
 > The normative text of this specification is `DEFINITION`-level (a convention).
 > The empirical results it has produced are `EMPIRICAL`-level. Neither is a
 > mathematical theorem; see [Truth Grading](spec/wangyi_spec.md#2-truth-grading).
@@ -32,6 +32,14 @@ corpus — the protocol **forces `INCONCLUSIVE`** and forbids `PASS`. "We did
 not detect a defect" is a statement about the scanner, never a statement about
 the mathematics (reverse-burden-of-proof gate).
 
+**Long-term design goal (v2.0, honest level):** the per-declaration
+provenance ledger is built to become the accountability substrate for
+**decentralized mathematical verification** — independent auditors
+reconciling against the same hash-locked, append-only record of who proved
+what, with which model, and which gaps. This is registered ambition, not a
+current capability claim (see CHANGELOG §v2.0-draft, "Registered
+ambition"; the TP-MA008 topics carry what must close first).
+
 ## The three-layer validity model
 
 The protocol instantiates the three-layer validity model of formal proofs:
@@ -52,14 +60,31 @@ WP-L1/L2 verdicts carry no guarantee. A project may claim any level it has
   `THEOREM` / `GAP-OPEN` / `FALSIFIED`, with a strict no-recursive-upgrade rule
   (many independent empirical confirmations never add up to a theorem).
 - **MA-series audit gates** — `MA-000` delivery gate, `MA-007` dual-condition
-  Mathlib verification gate, ... ([spec/ma_000.md](spec/ma_000.md),
-  [spec/ma_007.md](spec/ma_007.md))
+  Mathlib verification gate, `MA-008` per-declaration provenance &
+  model-signature registration gate
+  ([spec/ma_000.md](spec/ma_000.md), [spec/ma_007.md](spec/ma_007.md),
+  [spec/ma_008.md](spec/ma_008.md))
 - **R-series meta-rules** — R01–R13 audit discipline (append-only ledgers,
   hash locking, label discipline, ...)
 - **Append-only archival** — superseded/defective material is never deleted;
   it is stamped `SUPERSEDED`/`DEPRECATED`/`HISTORICAL` and hash-locked.
 - **Machine-readable verdict schema** —
   [schema/verdict_schema.yaml](schema/verdict_schema.yaml)
+- **Per-declaration provenance ledger** — `MA-008` requires every declaration
+  to carry its own production record (model family, version, weight/release
+  signature, and a `contribution_type` that separates AI draft, human rewrite,
+  and pure-human), hash-locked and append-only. Project-level "AI-assisted"
+  labels are a blocking finding. Provenance records the *production* axis and
+  carries **no** credibility weight: a model-generated lemma still needs full
+  WP-L1/L2/L3, and a human-written one is not trusted on that basis alone.
+  Since schema v1.1, each stage also records its **execution environment**
+  (internal cluster / external API / local runtime — the same model family
+  generates under unequal conditions on the two sides of an API boundary, so
+  the generating regime is itself provenance), and token/cache costs live in
+  the compute-chain billing ledger, referenced from the manifest only as the
+  `cost_ledger_ref` hash pointer
+  ([spec/ma_008.md](spec/ma_008.md),
+  [schema/provenance_schema.yaml](schema/provenance_schema.yaml)).
 
 ## Flagship evidence: the OAI 409-entry audit
 
@@ -108,7 +133,7 @@ is one toolchain that implements them, not part of the normative text.
 
 1. **Single implementation.** The R/MA rules have one reference
    implementation. Portability to a second, independent codebase is
-   **unverified**; that is why this is `v1.0-draft`, not "standard".
+   **unverified**; that is why this is `v2.0-draft`, not "standard".
 2. **Scope.** Verified on Lean 4 + Mathlib artifacts. Coq/Isabelle adapters
    are designed-for, not yet demonstrated.
 3. **No truth guarantee.** The protocol certifies *audit-process integrity*,
@@ -117,8 +142,8 @@ is one toolchain that implements them, not part of the normative text.
    grade.
 4. **Truth level of this document.** The specification text is a
    `DEFINITION`-level convention; its published audit results are
-   `EMPIRICAL`. Citation should say "conforms to Wangyi Protocol v1.0-draft",
-   never "proven by Wangyi Protocol".
+    `EMPIRICAL`. Citation should say "conforms to Wangyi Protocol v2.0-draft",
+    never "proven by Wangyi Protocol".
 
 ## How to use (no code ships here)
 
@@ -151,16 +176,19 @@ in [examples/oai_409_entry_audit/](examples/oai_409_entry_audit/).
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23376296.svg)](https://doi.org/10.5281/zenodo.23376296)
 
-Archived release: <https://doi.org/10.5281/zenodo.23376296>
+Archived v1.0-draft release (2026-10-15): <https://doi.org/10.5281/zenodo.23376296>
+— the current line is **v2.0-draft**; its DOI will be registered at its own
+archived release (the v1 DOI is retained as the first-version archive).
 
 ```bibtex
-@software{wangyi_protocol_v1,
+@software{wangyi_protocol_v2,
   title   = {Wangyi Protocol: L3 Audit & Truth-Grading Protocol for
              Multi-Agent Formal Artifacts},
   author  = {Yi-Ting-zheng},
   year    = {2026},
-  version = {v1.0-draft},
-  doi     = {10.5281/zenodo.23376296},
+  version = {v2.0-draft},
+  note    = {v2.0-draft DOI pending registration; the v1.0-draft release
+             (2026-10-15) is archived at 10.5281/zenodo.23376296},
   url     = {https://github.com/Yi-Ting-zheng/wangyi-protocol}
 }
 ```
@@ -197,7 +225,7 @@ wangyi-protocol/
 
 **望易协议（Wangyi Protocol）——面向多智能体形式化制品的 L3 审计与真值分层协议**
 
-> **成熟度：v1.0-draft（草案规范 + 参考实现）**
+> **成熟度：v2.0-draft（草案规范 + 参考实现）**
 > 规范正文真值层级为 `DEFINITION`（约定），已产出的判定效果为 `EMPIRICAL`，
 > 均非数学定理，详见[真值分层](spec/wangyi_spec.md#2-truth-grading)。
 
@@ -221,6 +249,14 @@ import 不可解析、外部语料不可编译——协议**强制返回 `INCONC
 禁止输出 `PASS`。「未检出缺陷」永远是关于扫描器的陈述，不得转写为
 关于数学对象的陈述（反向举证门）。
 
+## 长期设计目标（v2.0，老实标注层级）
+
+逐声明溯源台账的设计目标，是成为**数学去中心化核验**的问责基座——
+多个独立审计人围绕同一份哈希锁定、只增不改的记录对账：谁证的、用哪个
+模型证的、过了哪些审计、还缺哪些缺口。这是**登记在案的长期目标**
+（`DEFINITION` 级约定），不是现状能力声明（见 CHANGELOG §v2.0-draft
+"Registered ambition"；TP-MA008 各课题承载必须先收口的实证工作）。
+
 ## 三层有效性模型
 
 协议把形式化证明的三层有效性模型实例化为三级符合性梯级：
@@ -238,11 +274,26 @@ WP-L3 是**底座**不是附加项：没有自测过的审计器，WP-L1/L2 的�
 
 - **真值分层规范**——`DEFINITION` / `HYPOTHESIS` / `EMPIRICAL` / `THEOREM` /
   `GAP-OPEN` / `FALSIFIED`，含递归升级禁令（多次独立实证不构成定理的充分条件）
-- **MA 系列审计门**——MA-000 交付门、MA-007 Mathlib 双条件核验门等
+- **MA 系列审计门**——MA-000 交付门、MA-007 Mathlib 双条件核验门、MA-008
+  逐声明溯源与模型签名登记门
+  ([spec/ma_000.md](spec/ma_000.md), [spec/ma_007.md](spec/ma_007.md),
+  [spec/ma_008.md](spec/ma_008.md))
 - **R 系列元规则**——R01–R13 审计纪律（append-only 台账、哈希锁、标签纪律……）
 - **Append-only 不可变归档**——被取代/缺陷材料永不删除，盖 `SUPERSEDED` /
   `DEPRECATED` / `HISTORICAL` 戳并哈希锁定
 - **机器可读裁决 schema**——[schema/verdict_schema.yaml](schema/verdict_schema.yaml)
+- **逐声明溯源台账**——MA-008 要求每条声明自带独立的生产记录（模型家族、
+  版本、权重/发布校验哈希、以及区分 AI 初稿/人工重构/纯手写的
+  `contribution_type`），哈希锁定、append-only 增长。项目级笼统的
+  「AI 辅助」标注属于阻断级缺陷。溯源只记录**生产轴**，不提供任何可信度
+  背书：模型生成的引理仍需完整走完 WP-L1/L2/L3，人工手写的也不会因此
+  被默认采信（来源轴与真值轴成对报告、不可互推）。schema v1.1 起，
+  每个 stage 还须记录**执行环境**（自有集群 / 外部 API / 本地运行时——
+  同一族模型在 API 边界两侧的生成条件不对等，生成所处的服务版本本身
+  就是溯源）；token/缓存消耗属自报量，只入算力链计费账本，清单内仅以
+  `cost_ledger_ref` 哈希指针指涉
+  ([spec/ma_008.md](spec/ma_008.md)、
+  [schema/provenance_schema.yaml](schema/provenance_schema.yaml))。
 
 ## 标杆实证：OAI 409 入口全量审计
 
@@ -281,18 +332,20 @@ Ostmann 4,358 / MutuallyUnbiased 3,381。
 ## 成熟度与局限（引用前必读）
 
 1. **单实现**：R/MA 规则目前只有一个参考实现，向第二套独立代码库的可移植性
-   **未验证**——这正是挂 `v1.0-draft` 而非宣称"标准"的原因。
+   **未验证**——这正是挂 `v2.0-draft` 而非宣称"标准"的原因。
 2. **范围**：已在 Lean 4 + Mathlib 制品上验证；Coq/Isabelle 适配器有设计无实证。
 3. **不作真值保证**：协议认证的是**审计过程完整性**，不是数学真值。
    依 C-02（同基座多 Agent 复核不构成独立验证），同语料重审永不升格真值层级。
 4. **本文档自身真值层级**：规范正文是 `DEFINITION` 级约定，已发布审计结果为
-   `EMPIRICAL` 级。引用应写"符合望易协议 v1.0-draft"，不得写"经望易协议证明"。
+   `EMPIRICAL` 级。引用应写"符合望易协议 v2.0-draft"，不得写"经望易协议证明"。
 
 ## 引用 / DOI
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23376296.svg)](https://doi.org/10.5281/zenodo.23376296)
 
-存档发布：<https://doi.org/10.5281/zenodo.23376296>（BibTeX 见英文区 Citation 节）
+存档的 v1.0-draft 版本（2026-10-15）：<https://doi.org/10.5281/zenodo.23376296>
+——当前版本线为 **v2.0-draft**；其 DOI 待随 v2 存档发布注册（v1 DOI 保留为首个版本存档）。
+（BibTeX 见英文区 Citation 节）
 
 ## 使用方法（本仓不产脚本）
 
@@ -329,4 +382,4 @@ SiliconLifeOS 研究体系；本文档为该体系审计纪律的**首次独立�
 
 ---
 
-`Wangyi Protocol | v1.0-draft | L3 audit & truth-grading for formal artifacts | 2026-10-14`
+`Wangyi Protocol | v2.0-draft | L3 audit & truth-grading for formal artifacts | 2026-10-18`

@@ -1,6 +1,6 @@
 # Wangyi Protocol — Normative Specification
 
-> **Version:** v1.0-draft　**Status:** Draft Specification
+> **Version:** v2.0-draft　**Status:** Draft Specification
 > **Normative source language:** English (this document)
 > **Truth level of this text:** `DEFINITION` — a convention, not a theorem.
 > **Conformance keywords:** MUST / MUST NOT / SHOULD / MAY are used per RFC 2119.
@@ -145,8 +145,9 @@ this dependency.
 ## 4. MA-Series Gates
 
 Gates are BLOCKING rules with machine-checkable preconditions. This version
-defines MA-000 (delivery) and MA-007 (Mathlib dual-condition). The full
-catalog lives in the reference implementation profile.
+defines MA-000 (delivery), MA-007 (Mathlib dual-condition), and MA-008
+(per-declaration provenance, §4.3). The full catalogue lives in the
+reference implementation profile.
 
 ### 4.1 MA-000 — Delivery gate
 
@@ -161,6 +162,23 @@ See [ma_007.md](ma_007.md). Summary: "Mathlib-verified complete" requires
 BOTH (A) import-tree coverage with no high-risk core-object redefinition,
 AND (B) full-chain `#print axioms` zero `sorryAx`. Either failing, or
 condition B being unverifiable (external corpus), blocks the verdict.
+
+### 4.3 MA-008 — Per-declaration provenance & model-signature registration gate
+
+See [ma_008.md](ma_008.md). Summary: every formal declaration (lemma,
+theorem, conditional theorem, conjecture, gap skeleton) MUST carry a
+machine-readable provenance record naming the producing model, its version
+and weight/release signature, and a `contribution_type` that distinguishes
+AI draft from human rewrite from pure-human. Absence of a provenance ledger
+on a multi-declaration project forces `INCONCLUSIVE`. Since schema v1.1,
+each stage also records its `execution_environment` (internal cluster vs
+external API vs local runtime — conditions of generation carry no
+credibility weight), and token/cache costs stay out of the manifest: the
+manifest carries only a hash pointer (`cost_ledger_ref`) into the
+compute-chain billing ledger. The environment gate P9 enters warn-only,
+promoted to strict after
+[../roadmap/ROADMAP-MA-008.md](../roadmap/ROADMAP-MA-008.md) TP-MA008-1
+closes.
 
 ---
 
@@ -227,6 +245,14 @@ Every audit MUST emit exactly one primary verdict from:
 (The Chinese-form names are canonical, matching the reference implementation;
 an English alias table is provided in schema/verdict_schema.yaml.)
 
+**Provenance axis (MA-008, v2.0):** when MA-008 is applied to the same
+artifact, the audit is reported as a **pair** on two axes, e.g.
+`MATHLIB_VERIFIED_COMPLETE / PROVENANCE_VERIFIED`. Both members stay inside
+their own closed sets (the five values above; the MA-008 closed set in
+schema/provenance_schema.yaml). The two axes are **not inferable from each
+other** — a mathematical-axis verdict never licenses a provenance-axis
+conclusion and vice versa.
+
 ### 7.2 Verdict record
 
 Verdicts MUST conform to [schema/verdict_schema.yaml](../schema/verdict_schema.yaml).
@@ -248,17 +274,23 @@ Superseded material is stamped, never deleted:
 | WP-L3-self-certified | §3.3 for the audit pipeline + §3.2 for the artifact |
 
 Claims of conformance MUST cite the protocol version
-(e.g. "conforms to Wangyi Protocol v1.0-draft") and MUST attach the verdict
+(e.g. "conforms to Wangyi Protocol v2.0-draft") and MUST attach the verdict
 snapshot + SHA-256.
 
 ---
 
 ## 9. Amendments
 
-This being v1.0-draft: amendments append new versions; this text is never
-rewritten in place. Changes are logged in the repository CHANGELOG with
-hash-chained references.
+**Version lineage:** `v1.0-draft` (2026-10-15, initial independent release,
+archived at the registered DOI) → `v1.x` intra-draft amendments →
+`v2.0-draft` (2026-10-18): the first major version carrying MA-008 as a
+full gate — normative provenance schema (v1.2), the pinned hash-normalization
+annex with conformance vectors, and the execution-environment axis.
+
+Rule: amendments append new versions; this text is never rewritten in
+place. Changes are logged in the repository CHANGELOG with hash-chained
+references.
 
 ---
 
-`Wangyi Protocol spec | v1.0-draft | normative English text | 2026-10-15`
+`Wangyi Protocol spec | v2.0-draft | normative English text | 2026-10-18`

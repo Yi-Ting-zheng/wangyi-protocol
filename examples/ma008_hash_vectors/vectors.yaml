@@ -1,0 +1,41 @@
+# Wangyi Protocol — MA-008 hash conformance vectors (v1.0, 2026-10-18)
+# 真值层级：DEFINITION（测试向量是约定数据，非代码；本仓仍不含可执行脚本）
+# 规格来源：spec/ma_008.md §4.2（规范附录）
+# 用途：第二实现逐向量比对哈希；任一向量不一致即不合规。
+# 记法：input_span 用 YAML 双引号标量（\n 即换行转义）；span 语义见 §4.2
+#      （statement span 自深度 0 冒号起、含冒号；proof span 自 := 后起、仅去尾部空白）。
+
+vectors:
+
+  # ── 向量 1+2：statement 正规化（空白折叠跨书写形态一致） ──────────────
+  - id: stmt-01-multiline
+    kind: statement_hash
+    input_span: ": ∀ {n : ℕ},\n        n + 0 = n"   # 含 tab 缩进与换行
+    expected_sha256: "2059c4e621701735d2405a57f33d9323ecb377b176d40d114d34f7ec85a409f4"
+    note: "折叠后 = ': ∀ {n : ℕ}, n + 0 = n'"
+  - id: stmt-02-oneline-equal
+    kind: statement_hash
+    input_span: ": ∀ {n : ℕ}, n + 0 = n"            # 同内容单行书写
+    expected_sha256: "2059c4e621701735d2405a57f33d9323ecb377b176d40d114d34f7ec85a409f4"
+    note: "与 stmt-01 必须同哈希（空白折叠的跨形态一致性）"
+
+  # ── 向量 3：proof 逐字节（不做空白折叠——战术缩进即信号） ─────────────
+  - id: proof-01-raw-bytes
+    kind: proof_hash
+    input_span: "  by intro n\n   \n  simp"
+    expected_sha256: "2128ffbc38244a7baedfd0112c50de75d21b529ca98e6debe7e4a67fbadf2904"
+    note: "仅去尾部空白（rstrip）；中间空行/缩进差异 → 不同哈希。若第二实现对其先折叠再哈希即失败"
+
+  # ── 向量 4：CONJECTURE 退化为空串哈希 ─────────────────────────────────
+  - id: proof-02-conjecture-empty
+    kind: proof_hash
+    input_span: ""
+    expected_sha256: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    note: "空串 SHA-256 常量；CONJECTURE 记录统一填此值"
+
+  # ── 向量 5：GAP-SKELETON 证明体为字面 sorry ──────────────────────────
+  - id: proof-03-skeleton-sorry
+    kind: proof_hash
+    input_span: "sorry"
+    expected_sha256: "484aab2f2cd0f77b3c30f91521ba9a76c8c501112a53e100154a098c274f03d3"
+    note: "'sorry' 字面量之 SHA-256；GAP-SKELETON 证明体统一为字面 sorry"

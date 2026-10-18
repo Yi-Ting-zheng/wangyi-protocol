@@ -1,0 +1,249 @@
+# Wangyi Protocol — Provenance Schema (machine-readable)
+# 真值层级：DEFINITION（schema 为约定；其校验效果为 EMPIRICAL）
+# 上位契约：spec/wangyi_spec.md#4.3 与 spec/ma_008.md
+# 版本：v1.2-draft | 2026-10-18
+# 关联：verdict_schema.yaml（裁决 schema）；本 schema 管"制品怎么来的"，
+#       verdict_schema 管"制品对不对"，二者互补不互替。
+
+meta:
+  schema_version: "1.2-draft"
+  protocol: "Wangyi Protocol"
+  gate: "MA-008"
+  normative_source: "spec/ma_008.md"
+  maturity_note: >
+    Draft schema. Single reference implementation (ma008_provenance.py in the
+    SiliconLifeOS EMF Profile, an external, independent research tree);
+    portability to a second independent codebase unverified — conformance
+    vectors for hash interoperability live in examples/ma008_hash_vectors/.
+  v1_1_changes: >
+    Two additive changes, both non-breaking for v1.0 manifests:
+    (1) execution_environment closed enum + per-stage field — records the
+    generation conditions (internal cluster vs external API vs local runtime);
+    (2) cost_ledger_ref pointer — token/cache-consumption figures live in the
+    compute-chain billing ledger, NOT here; the provenance manifest carries
+    only a hash pointer. P9 (execution-environment gate) enters as type:warn
+    and is SUSPENDED from promotion to strict until roadmap topic
+    roadmap/ROADMAP-MA-008.md (#tp-ma008-1) closes.
+  v1_2_changes: >
+    Pre-v2 defect sweep (2026-10-18 audit), all additive or clarifying:
+    (1) P6 tightened and made self-consistent — AI_COMPLETE now requires a
+    modification_log entry with entry_kind: zero_edit_attestation whose
+    proof_hash_sha256 equals the record's own proof_hash_sha256 (draft =
+    final); (2) modification_log entries gain the optional entry_kind field
+    (edit | zero_edit_attestation, default edit); (3) P3 gains the explicit
+    HUMAN_FULL exemption — the three model-identity fields MUST be the empty
+    string on HUMAN_FULL stages (empty values are valid only there);
+    (4) verdict_enum canonical now includes INCONCLUSIVE (was only reachable
+    via verdict_logic), alias INCONCLUSIVE_PROVENANCE_UNADJUDICATABLE;
+    (5) statement/proof hash normalization is now pinned normatively in
+    spec/ma_008.md §4.2 (statement: whitespace-collapsed + stripped; proof:
+    byte-exact raw span; CONJECTURE: hash of empty string) with conformance
+    vectors in examples/ma008_hash_vectors/.
+
+# ── 封闭枚举（协议固化，禁止自造值） ──────────────────────────────────────
+artifact_type_enum:
+  - LEMMA            # 辅助引理，服务主证明链
+  - THEOREM          # 无条件定理：零外部公理、零顶层 sorry
+  - THEOREM-COND     # 条件定理：仅依赖白名单登记的外部假设
+  - CONJECTURE       # 猜想，只有陈述无证明
+  - GAP-SKELETON     # 缺口骨架：命题 + sorry 占位，须入 GAP 台账
+
+contribution_type_enum:
+  - AI_DRAFT          # 模型出初稿，人工实质性重构（修语法/类型/战术/逻辑缺口）
+  - AI_LEMMA_SUGGEST  # 模型仅推荐引理名/证明思路，代码纯人工
+  - HUMAN_FULL        # 全程人工，模型未参与生成证明文本
+  - AI_MINOR_TWEAK    # 人工主体完成，模型仅微调少量战术行
+  - AI_COMPLETE       # 模型一次输出完整可编译证明，人工仅审计、零代码修改
+
+stage_enum:
+  - draft     # 初稿
+  - refactor  # 实质性重构
+  - final_tweak # 终局微调
+
+execution_environment_enum:
+  - internal_cluster   # 自有集群执行（权重本地部署；无外部计费对手方）
+  - external_api       # 外部 API 调用（服务端可截断上下文/限采样/计量，签名应指端点而非权重）
+  - local_runtime      # 本地单机推理（个人设备，无集群与外部 API）
+
+# ── 字段定义 ──────────────────────────────────────────────────────────────
+fields:
+  artifact_id:
+    type: "string"
+    required: true
+    note: "项目内唯一；同一声明修订期间保持稳定，声明改名即视为新制品"
+  artifact_type:
+    type: "enum"
+    values_from: "artifact_type_enum"
+    required: true
+  statement_hash_sha256:
+    type: "string"
+    pattern: "^[0-9a-f]{64}$"
+    required: true
+    note: "命题陈述文本片段 SHA-256；正规化算法规格见 spec/ma_008.md §4.2（空白折叠+去尾）"
+  proof_hash_sha256:
+    type: "string"
+    pattern: "^[0-9a-f]{64}$"
+    required: true
+    note: "证明体（:= 之后原文切片）SHA-256，逐字节不折叠；CONJECTURE 填空串哈希以保持 schema 形状统一；规格见 §4.2"
+  provenance:
+    type: "array"
+    min_items: 1
+    required: true
+    item_fields:
+      stage:        {type: "enum", values_from: "stage_enum"}
+      model_family: {type: "string", note: "HUMAN_FULL stage 须为空串（P3 豁免仅此情形）"}
+      model_version: {type: "string", note: "HUMAN_FULL stage 须为空串"}
+      model_signature: {type: "string", note: "开源=权重 checkpoint sha256；闭源=官方发布标识+发布摘要；HUMAN_FULL stage 须为空串"}
+      contribution_type: {type: "enum", values_from: "contribution_type_enum"}
+      timestamp:    {type: "string", note: "ISO 8601，带时区偏移"}
+      auditor:      {type: "string", note: "L3 审计执行人（人或 Agent 名）"}
+      audit_verdict: {type: "string", note: "该阶段当时的 WP 裁决，如 PASS_L2 / BLOCK_条件A"}
+      execution_environment:
+        type: "enum"
+        values_from: "execution_environment_enum"
+        required: false        # v1.0 清单豁免；v1.1 清单起必填（缺项由 P9 warn 计数披露）
+        binding_from: "1.1"    # schema 版本起强制
+        note: >
+          生成条件轴，与模型身份轴正交。开源权重在内外两侧执行时签名指向
+          同一份权重，但"服务事实"不同：服务端可截断上下文、限采样上限、
+          计量口径不同——思考链是坐标变换后的表层叙事，同族模型不保证
+          两种环境产出可比。同一 stage 混环境禁止，须拆条登记。
+      cost_ledger_ref:
+        type: "string"
+        pattern: "^[0-9a-f]{64}$"
+        required: false
+        note: >
+          token 消耗 / 缓存策略 / 配额为自报量（内部集群计量无交易对手方
+          复核），一律不入本清单——只存放算力链计费账本（append-only，
+          计费单为第三方锚点）对应切片的 SHA-256。指针/作用域/冲突声明
+          三件套登记，见 spec/ma_008.md §9.1。
+  modification_log:
+    type: "array"
+    required: false
+    note: "人工修改链，append-only；缺项为 PROVENANCE_INCOMPLETE 警示，不阻断"
+    item_fields:
+      entry_kind:   {type: "enum", values: ["edit", "zero_edit_attestation"], required: false, note: "默认 edit；zero_edit_attestation 为 P6 专用（审计人签署的零人工修改证明，其 proof_hash_sha256 须等于记录本体 proof_hash_sha256）"}
+      sequence:     {type: "integer", note: "从 1 起单调"}
+      proof_hash_sha256: {type: "string", pattern: "^[0-9a-f]{64}$", note: "本次修改后的证明哈希"}
+      edit_summary: {type: "string"}
+      editor:       {type: "string"}
+      timestamp:    {type: "string"}
+      prev_hash:    {type: "string", note: "上一条日志哈希；首条为空，断链=PROVENANCE_CHAIN_BROKEN"}
+
+# ── MA-008 门控检查 ───────────────────────────────────────────────────────
+checks:
+  - id: P1
+    name: "每声明一记录"
+    type: "strict"
+    rule: "provenance 记录数 == GAP 台账声明数"
+  - id: P2
+    name: "逐声明粒度"
+    type: "strict"
+    rule: "禁止项目级笼统标注单独存在"
+  - id: P3
+    name: "必填字段与枚举"
+    type: "strict"
+    rule: "§4 必填字段齐全且非空；contribution_type 为规范枚举值。唯一豁免：HUMAN_FULL stage 的
+      model_family / model_version / model_signature 必须取空串且视为合规，
+      其他 stage 类型上出现空串即本类失败（不许缺字段，只能空串）"
+  - id: P4
+    name: "哈希对账"
+    type: "strict"
+    rule: "statement_hash / proof_hash 与源码（方案 A）或清单（方案 B）一致"
+  - id: P5
+    name: "枚举合法性"
+    type: "strict"
+    rule: "三枚举均取自封闭值集"
+  - id: P6
+    name: "AI_COMPLETE 举证"
+    type: "strict"
+    rule: "AI_COMPLETE 须 modification_log 中恰有一条 entry_kind=zero_edit_attestation，且该条
+      proof_hash_sha256 == 记录本体 proof_hash_sha256（草稿=终稿，哈希绑定即证据）；
+      无该条或与其同记录的 edit 条目并存 → BLOCK_宣称不可证；另须 L3 复核"
+  - id: P7
+    name: "清单哈希锁"
+    type: "strict"
+    rule: "manifest_sha256 可校验；清单 append-only"
+  - id: P8
+    name: "缺口骨架登记"
+    type: "strict"
+    rule: "GAP-SKELETON 记录一一匹配 GAP 台账条目"
+  - id: P9
+    name: "执行环境登记与签名一致性"
+    type: "warn"          # 挂起晋升：type:warn 过渡形态，晋升 strict 待 roadmap/ROADMAP-MA-008.md TP-MA008-1 关闭
+    suspended_promotion: true
+    rule: >
+      (a) manifest_version ≥ 1.1 的清单，每条 provenance stage 须带
+      execution_environment；缺项逐条计数披露，不得静默缺省（反向举证门）。
+      (b) 同一 stage 内禁止混合环境——混合须拆为多条 stage。
+      (c) 签名语义随环境分流：internal_cluster / local_runtime →
+      权重 checkpoint 哈希；external_api → 端点/服务版本标识 +
+      服务方发布摘要。环境类与签名形态不一致逐条告警；此时签的
+      "权重身份"对外部 API 产物是错误粒度的身份。
+    promotion_note: >
+      复制 T01 对照组必须覆盖 P9 的阳性/阴性/边界/逃逸四维，并在真实清单
+      上跑满一轮后才允许改为 strict；在此之前 P9 仅为披露通道，不产生任何
+      BLOCK 裁决值。判假条件与漏报登记见 roadmap/ROADMAP-MA-008.md。
+
+# ── 裁决集（封闭） ────────────────────────────────────────────────────────
+verdict_enum:
+  canonical:
+    - "PROVENANCE_VERIFIED"
+    - "BLOCK_溯源清单缺失"
+    - "BLOCK_粒度不足"
+    - "BLOCK_字段不合规"
+    - "BLOCK_哈希不匹配"
+    - "BLOCK_宣称不可证"
+    - "BLOCK_哈希锁失效"
+    - "BLOCK_缺口未登记"
+    - "INCONCLUSIVE"   # v1.2 补齐：缺口缺清单时 verdict_logic 原已发出，此前未入闭集
+  english_alias:
+    PROVENANCE_VERIFIED: "PROVENANCE_VERIFIED"
+    BLOCK_溯源清单缺失: "BLOCK_PROVENANCE_LEDGER_MISSING"
+    BLOCK_粒度不足: "BLOCK_GRANULARITY_INSUFFICIENT"
+    BLOCK_字段不合规: "BLOCK_FIELDS_NONCONFORMANT"
+    BLOCK_哈希不匹配: "BLOCK_HASH_MISMATCH"
+    BLOCK_宣称不可证: "BLOCK_CLAIM_UNSUBSTANTIATED"
+    BLOCK_哈希锁失效: "BLOCK_HASH_LOCK_BROKEN"
+    BLOCK_缺口未登记: "BLOCK_GAP_UNREGISTERED"
+    INCONCLUSIVE: "INCONCLUSIVE_PROVENANCE_UNADJUDICATABLE"
+
+verdict_logic:
+  - when: {P1: FAIL}
+    verdict: "BLOCK_溯源清单缺失"
+  - when: {P2: FAIL}
+    verdict: "BLOCK_粒度不足"
+  - when: {P3: FAIL}
+    verdict: "BLOCK_字段不合规"
+  - when: {P4: FAIL}
+    verdict: "BLOCK_哈希不匹配"
+  - when: {P6: FAIL}
+    verdict: "BLOCK_宣称不可证"
+  - when: {P7: FAIL}
+    verdict: "BLOCK_哈希锁失效"
+  - when: {P8: FAIL}
+    verdict: "BLOCK_缺口未登记"
+  - when: {P5: FAIL}
+    verdict: "BLOCK_字段不合规"
+  - when: {all_pass: true}
+    verdict: "PROVENANCE_VERIFIED"
+  - when: {manifest_missing_multi_decl: true}
+    verdict: "INCONCLUSIVE"   # 多声明项目无溯源清单 → 反向举证门
+
+# ── 清单（方案 B）元数据 ──────────────────────────────────────────────────
+manifest_meta_fields:
+  - manifest_version
+  - protocol
+  - gate
+  - project
+  - manifest_sha256   # 自描述哈希：计算时本字段置空串
+  - generated_at
+  - generator
+
+# ── 与裁决 schema 的关系 ─────────────────────────────────────────────────
+companion_schema: "verdict_schema.yaml"
+note: >
+  本 schema 描述"制品的生产链路"（来源轴），verdict_schema.yaml 描述"制品
+  的数学有效性"（真值轴）。来源签名不提供任何可信度背书；两条轴必须
+  成对报告，不可互推。联合裁决形如
+  "MATHLIB_VERIFIED_COMPLETE / PROVENANCE_VERIFIED"。
