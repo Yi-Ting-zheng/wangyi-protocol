@@ -61,9 +61,11 @@ WP-L1/L2 verdicts carry no guarantee. A project may claim any level it has
   (many independent empirical confirmations never add up to a theorem).
 - **MA-series audit gates** — `MA-000` delivery gate, `MA-007` dual-condition
   Mathlib verification gate, `MA-008` per-declaration provenance &
-  model-signature registration gate
+  model-signature registration gate, `MA-009` channel-fidelity gate
+  (Chat↔Agent proxy vs. Skill-direct channel routing, hash+line-range
+  verification, instruction-decay & cumulative-compression defense)
   ([spec/ma_000.md](spec/ma_000.md), [spec/ma_007.md](spec/ma_007.md),
-  [spec/ma_008.md](spec/ma_008.md))
+  [spec/ma_008.md](spec/ma_008.md), [spec/ma_009.md](spec/ma_009.md))
 - **R-series meta-rules** — R01–R13 audit discipline (append-only ledgers,
   hash locking, label discipline, ...)
 - **Append-only archival** — superseded/defective material is never deleted;
